@@ -1,0 +1,345 @@
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/jensonhirst/Orion/main/source')))()
+local Window = OrionLib:MakeWindow({Name = "JohnsonExecutor Script Hub", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
+
+--[[
+Name = <string> - The name of the UI.
+HidePremium = <bool> - Whether or not the user details shows Premium status or not.
+SaveConfig = <bool> - Toggles the config saving in the UI.
+ConfigFolder = <string> - The name of the folder where the configs are saved.
+IntroEnabled = <bool> - Whether or not to show the intro animation.
+IntroText = <string> - Text to show in the intro animation.
+IntroIcon = <string> - URL to the image you want to use in the intro animation.
+Icon = <string> - URL to the image you want displayed on the window.
+CloseCallback = <function> - Function to execute when the window is closed.
+]]
+local Tab = Window:MakeTab({
+	Name = "Scripts",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+Tab:AddButton({
+	Name = "Johnson Flying Script",
+	Callback = function()
+-- Fly Script with UI for Fly Mode, Speed Control, "Johnson Flying Script" Label, Draggable UI, Minimize Functionality, Key Toggle (Shift for Fly, Ctrl for Close), Up/Down Control, Button Controls, UI Corner, and UI Stroke
+ 
+local flying = false
+local speed = 50 -- Default flying speed
+local bodyVelocity, bodyGyro
+local isMinimized = false
+local isUIVisible = true  -- Track the visibility of the UI
+local upwardSpeed = 50  -- Default upward speed
+local downwardSpeed = -50  -- Default downward speed
+local verticalSpeed = 0  -- To control vertical speed (up/down)
+local userInputService = game:GetService("UserInputService")
+ 
+-- Function to start flying
+function startFlying(player)
+    local character = player.Character
+    local humanoid = character:FindFirstChild("Humanoid")
+    if humanoid and not flying then
+        flying = true
+        local hrp = character:WaitForChild("HumanoidRootPart")
+ 
+        -- Create BodyVelocity to move the player
+        bodyVelocity = Instance.new("BodyVelocity")
+        bodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
+        bodyVelocity.Velocity = Vector3.new(0, verticalSpeed, 0) -- Initial vertical velocity
+        bodyVelocity.Parent = hrp
+ 
+        -- Create BodyGyro to keep the player stable in the air
+        bodyGyro = Instance.new("BodyGyro")
+        bodyGyro.MaxTorque = Vector3.new(100000, 100000, 100000)
+        bodyGyro.CFrame = hrp.CFrame
+        bodyGyro.Parent = hrp
+ 
+        -- Keep the player flying until stopped
+        game:GetService("RunService").Heartbeat:Connect(function()
+            if flying then
+                bodyVelocity.Velocity = hrp.CFrame.LookVector * speed + Vector3.new(0, verticalSpeed, 0)
+            end
+        end)
+    end
+end
+ 
+-- Function to stop flying
+function stopFlying(player)
+    local character = player.Character
+    if character then
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            flying = false
+            if bodyVelocity then bodyVelocity:Destroy() end
+            if bodyGyro then bodyGyro:Destroy() end
+        end
+    end
+end
+ 
+-- UI Setup
+local player = game.Players.LocalPlayer
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
+ 
+-- Window Frame (outer frame)
+local windowFrame = Instance.new("Frame")
+windowFrame.Size = UDim2.new(0.3, 0, 0.4, 0)
+windowFrame.Position = UDim2.new(0.35, 0, 0.3, 0)
+windowFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+windowFrame.Parent = screenGui
+ 
+-- Add UI Stroke to the outer window frame (for the border)
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Thickness = 2  -- Border thickness
+uiStroke.Color = Color3.fromRGB(255, 255, 255)  -- Border color (white)
+uiStroke.Parent = windowFrame
+ 
+-- Title Bar (for dragging)
+local titleBar = Instance.new("TextLabel")
+titleBar.Size = UDim2.new(1, 0, 0.1, 0)
+titleBar.Text = "Johnson Flying Script"  -- Updated to "Johnson Flying Script"
+titleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+titleBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleBar.TextSize = 18
+titleBar.Parent = windowFrame
+ 
+-- Variable to handle dragging
+local dragging = false
+local dragInput, mousePos, framePos
+ 
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        mousePos = input.Position
+        framePos = windowFrame.Position
+    end
+end)
+ 
+titleBar.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - mousePos
+        windowFrame.Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)
+    end
+end)
+ 
+titleBar.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+ 
+-- Settings Panel (content panel)
+local settingsPanel = Instance.new("Frame")
+settingsPanel.Size = UDim2.new(1, 0, 0.9, 0)
+settingsPanel.Position = UDim2.new(0, 0, 0.1, 0)
+settingsPanel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+settingsPanel.Parent = windowFrame
+ 
+-- Add UI Corner to the settings panel (rounded corners)
+local uiCornerSettings = Instance.new("UICorner")
+uiCornerSettings.CornerRadius = UDim.new(0, 10)  -- Rounded corners
+uiCornerSettings.Parent = settingsPanel
+ 
+-- Speed Label
+local speedLabel = Instance.new("TextLabel")
+speedLabel.Size = UDim2.new(0.8, 0, 0.1, 0)
+speedLabel.Position = UDim2.new(0.1, 0, 0.2, 0)
+speedLabel.Text = "Fly Speed: " .. speed
+speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+speedLabel.TextSize = 14
+speedLabel.Parent = settingsPanel
+ 
+-- Fly Speed Slider
+local speedSlider = Instance.new("TextButton")
+speedSlider.Size = UDim2.new(0.8, 0, 0.1, 0)
+speedSlider.Position = UDim2.new(0.1, 0, 0.3, 0)
+speedSlider.Text = "Adjust Speed"
+speedSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedSlider.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+speedSlider.TextSize = 14
+speedSlider.Parent = settingsPanel
+ 
+speedSlider.MouseButton1Click:Connect(function()
+    -- Increase or decrease speed
+    speed = speed + 10
+    if speed > 200 then speed = 50 end  -- Reset to default if max speed is reached
+    speedLabel.Text = "Fly Speed: " .. speed
+end)
+ 
+-- "Do You Want to Fly?" Button
+local flyButton = Instance.new("TextButton")
+flyButton.Size = UDim2.new(0.8, 0, 0.1, 0)
+flyButton.Position = UDim2.new(0.1, 0, 0.5, 0)
+flyButton.Text = "Do You Want to Fly?"
+flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+flyButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+flyButton.TextSize = 14
+flyButton.Parent = settingsPanel
+ 
+flyButton.MouseButton1Click:Connect(function()
+    -- Toggle flying when button is clicked
+    if flying then
+        stopFlying(player)
+        flyButton.Text = "Do You Want to Fly?"  -- Change button text to indicate flying is off
+    else
+        startFlying(player)
+        flyButton.Text = "Stop Flying"  -- Change button text to indicate flying is on
+    end
+end)
+ 
+-- Up Button
+local upButton = Instance.new("TextButton")
+upButton.Size = UDim2.new(0.8, 0, 0.1, 0)
+upButton.Position = UDim2.new(0.1, 0, 0.6, 0)
+upButton.Text = "Move Up"
+upButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+upButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+upButton.TextSize = 14
+upButton.Parent = settingsPanel
+ 
+upButton.MouseButton1Click:Connect(function()
+    verticalSpeed = upwardSpeed  -- Move upwards
+end)
+ 
+-- Down Button
+local downButton = Instance.new("TextButton")
+downButton.Size = UDim2.new(0.8, 0, 0.1, 0)
+downButton.Position = UDim2.new(0.1, 0, 0.7, 0)
+downButton.Text = "Move Down"
+downButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+downButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+downButton.TextSize = 14
+downButton.Parent = settingsPanel
+ 
+downButton.MouseButton1Click:Connect(function()
+    verticalSpeed = downwardSpeed  -- Move downwards
+end)
+ 
+-- Close Button (moved below "Move Down")
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0.8, 0, 0.1, 0)
+closeButton.Position = UDim2.new(0.1, 0, 0.8, 0)  -- Positioned below "Move Down"
+closeButton.Text = "Close UI"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+closeButton.TextSize = 14
+closeButton.Parent = settingsPanel
+ 
+closeButton.MouseButton1Click:Connect(function()
+    -- Show a warning before closing the UI
+    local confirmation = Instance.new("Message")
+    confirmation.Text = "Are you sure you want to close the UI?"
+    confirmation.Parent = screenGui
+    wait(2)
+    confirmation:Destroy()
+    screenGui:Destroy()  -- Close the UI
+end)
+ 
+-- Minimize Button
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Size = UDim2.new(0.2, 0, 0.1, 0)
+minimizeButton.Position = UDim2.new(0.8, 0, 0, 0)
+minimizeButton.Text = "_"
+minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+minimizeButton.TextSize = 14
+minimizeButton.Parent = windowFrame
+ 
+minimizeButton.MouseButton1Click:Connect(function()
+    -- Toggle window minimization
+    if isMinimized then
+        windowFrame.Size = UDim2.new(0.3, 0, 0.4, 0)  -- Restore size
+        settingsPanel.Visible = true  -- Restore the settings panel visibility
+    else
+        windowFrame.Size = UDim2.new(0.3, 0, 0.1, 0)  -- Minimize size
+        settingsPanel.Visible = false  -- Hide the settings panel
+    end
+    isMinimized = not isMinimized
+end)
+ 
+-- Key Toggle (Shift for Fly, Ctrl for UI Close)
+userInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.UserInputType == Enum.UserInputType.Keyboard then
+        if input.KeyCode == Enum.KeyCode.LeftShift then
+            -- Toggle fly mode with Shift
+            if flying then
+                stopFlying(player)
+            else
+                startFlying(player)
+            end
+        elseif input.KeyCode == Enum.KeyCode.LeftControl then
+            -- Close the UI with Ctrl
+            screenGui:Destroy()
+        end
+    end
+end)
+      		print("button pressed")
+  	end    
+})
+Tab:AddButton({
+	Name = "UNC TEST",
+	Callback = function()
+    loadstring(game:HttpGet("https://github.com/ltseverydayyou/uuuuuuu/blob/main/UNC%20test?raw=true"))()
+      		print("button pressed")
+  	end    
+})
+
+Tab:AddButton({
+	Name = "Johnson ESP SCRIPT COMING!",
+	Callback = function()
+      		print("button pressed")
+  	end    
+})
+
+Tab:AddButton({
+	Name = "Build a boat, easy gold blocks",
+	Callback = function()
+      		print("button pressed")
+  	end    
+})
+
+--[[
+Name = <string> - The name of the button.
+Callback = <function> - The function of the button.
+]]
+
+--[[
+Name = <string> - The name of the button.
+Callback = <function> - The function of the button.
+]]
+Tab:AddButton({
+	Name = "sUNC Test",
+	Callback = function()
+    loadstring(game:HttpGet("https://gitlab.com/sens3/nebunu/-/raw/main/HummingBird8's_sUNC_yes_i_moved_to_gitlab_because_my_github_acc_got_brickedd/sUNCm0m3n7.lua"))()
+      		print("button pressed")
+  	end
+  
+
+
+--[[
+Name = <string> - The name of the button.
+Callback = <function> - The function of the button.
+]]
+})
+OrionLib:Init()
+local Tab = Window:MakeTab({
+	Name = "Updates",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+--[[
+Name = <string> - The name of the tab.
+Icon = <string> - The icon of the tab.
+PremiumOnly = <bool> - Makes the tab accessible to Sirus Premium users only.
+]]
+local Section = Tab:AddSection({
+	Name = "Update Log:"
+})
+
+--[[
+Name = <string> - The name of the section.
+]]
+Tab:AddLabel("Executor 🔴")
+Tab:AddLabel("Script Hub 🟢")
+Tab:AddLabel("Key System 🟢")
