@@ -1,5 +1,5 @@
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/jensonhirst/Orion/main/source')))()
-local Window = OrionLib:MakeWindow({Name = "JohnsonExecutor Script Hub", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
+local Window = OrionLib:MakeWindow({Name = "Johnson Script Hub", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
 
 --[[
 Name = <string> - The name of the UI.
@@ -292,7 +292,7 @@ Tab:AddButton({
 })
 
 Tab:AddButton({
-	Name = "Build a boat, easy gold blocks",
+	Name = "Build A Boat Script",
 	Callback = function()
       		print("button pressed")
   	end    
