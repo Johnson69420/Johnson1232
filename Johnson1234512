@@ -340,6 +340,6 @@ local Section = Tab:AddSection({
 --[[
 Name = <string> - The name of the section.
 ]]
-Tab:AddLabel("Executor 🔴")
+Tab:AddLabel("Executor 🟡")
 Tab:AddLabel("Script Hub 🟢")
 Tab:AddLabel("Key System 🟢")
